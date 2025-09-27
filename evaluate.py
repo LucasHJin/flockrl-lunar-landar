@@ -1,24 +1,11 @@
 import gymnasium as gym
+from stable_baselines3 import PPO
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.evaluation import evaluate_policy
 
-# First, we create our environment called LunarLander-v3
-env = gym.make("LunarLander-v3", render_mode="human")
+# Source -> https://huggingface.co/learn/deep-rl-course/en/unit1/hands-on
 
-# Then we reset this environment
-observation, info = env.reset()
-
-for _ in range(1000):
- # Take a random action
- action = env.action_space.sample()
- print("Action taken:", action)
-
- # Do this action in the environment and get
- # next_state, reward, terminated, truncated and info
- observation, reward, terminated, truncated, info = env.step(action)
-
- # If the game is terminated (in our case we land, crashed) or truncated (timeout)
- if terminated or truncated:
-     # Reset the environment
-     print("Environment is reset")
-     observation, info = env.reset()
-
-env.close()
+eval_env = Monitor(gym.make("LunarLander-v3", render_mode='rgb_array'))
+model = PPO.load("ppo-LunarLander-v3")
+mean_reward, std_reward = evaluate_policy(model, eval_env, n_eval_episodes=100, deterministic=True)
+print(f"mean_reward = {mean_reward:.2f} +/- {std_reward:.2f}")
